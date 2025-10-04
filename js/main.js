@@ -63,14 +63,61 @@ $(".navbar").sticky({topSpacing: 0});
 
 
 /* Scroll spy and scroll filter */
-    $('#main-menu').onePageNav({
-        currentClass: "active",
-        changeHash: false,
-        scrollThreshold: 0.5,
-        scrollSpeed: 750,
-        filter: "",
-        easing: "swing"	
-     });
+    var $mainMenu = $('#main-menu');
+    var $menuLinks = $mainMenu.find('a[href^="#"]');
+    var $sections = $menuLinks.map(function () {
+        var target = $($(this).attr('href'));
+        if (target.length) {
+            return target.get(0);
+        }
+    });
+
+    var $navbarCollapse = $('.navbar-collapse');
+
+    $menuLinks.on('click', function (event) {
+        var $target = $($(this).attr('href'));
+        if ($target.length) {
+            event.preventDefault();
+
+            $('html, body').animate({
+                scrollTop: $target.offset().top
+            }, 750, 'swing');
+
+            $mainMenu.find('li').removeClass('active');
+            $(this).parent('li').addClass('active');
+
+            if ($navbarCollapse.hasClass('in')) {
+                $navbarCollapse.collapse('hide');
+            }
+        }
+    });
+
+    var updateActiveSection = function () {
+        var scrollPosition = $(window).scrollTop();
+        var navbarHeight = $('.navbar').outerHeight() || 0;
+        var currentSection = null;
+
+        $sections.each(function () {
+            var $section = $(this);
+            if ($section.length) {
+                var sectionTop = $section.offset().top - navbarHeight - 1;
+                if (scrollPosition >= sectionTop) {
+                    currentSection = $section;
+                }
+            }
+        });
+
+        if (currentSection) {
+            var id = currentSection.attr('id');
+            if (id) {
+                $mainMenu.find('li').removeClass('active');
+                $mainMenu.find('a[href="#' + id + '"]').parent('li').addClass('active');
+            }
+        }
+    };
+
+    $(window).on('scroll resize', updateActiveSection);
+    updateActiveSection();
 
 /* Charts*/
     
